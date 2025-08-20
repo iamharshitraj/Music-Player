@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Player</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #121212, #1db954);
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .player-container {
+            background: #282828;
+            border-radius: 10px;
+            padding: 20px;
+            width: 400px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+        }
+        .album-art {
+            width: 100%;
+            height: 200px;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+        .song-info {
+            text-align: center;
+            margin: 15px 0;
+        }
+        .song-title {
+            font-size: 1.5em;
+            margin: 0;
+        }
+        .artist {
+            font-size: 1em;
+            color: #b3b3b3;
+        }
+        .progress-container {
+            width: 100%;
+            height: 5px;
+            background: #535353;
+            border-radius: 5px;
+            margin: 10px 0;
+            cursor: pointer;
+        }
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: #1db954;
+            border-radius: 5px;
+        }
+        .controls {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin: 20px 0;
+        }
+        .control-btn {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 1.5em;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+        .control-btn:hover {
+            color: #1db954;
+        }
+        .playlist {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+        .playlist-item {
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+        .playlist-item:hover {
+            background: #3e3e3e;
+        }
+        .playlist-item.active {
+            background: #1db954;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="player-container">
+        <img src="https://via.placeholder.com/400x200?text=Album+Art" class="album-art" id="albumArt">
+        <div class="song-info">
+            <h2 class="song-title" id="songTitle">Song Title</h2>
+            <p class="artist" id="artist">Artist</p>
+        </div>
+        <div class="progress-container" id="progressContainer">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+        <div class="controls">
+            <button class="control-btn" id="prevBtn">⏮</button>
+            <button class="control-btn" id="playPauseBtn">▶</button>
+            <button class="control-btn" id="nextBtn">⏭</button>
+        </div>
+        <div class="playlist" id="playlist">
+            <!-- Playlist items will be dynamically added here -->
+        </div>
+    </div>
+
+    <script>
+        const playlist = [
+            {
+                 title: "Naav",
+                artist: "Pritam",
+                src: "Naav Hai Teri Naav Udaan.mp3",
+                cover: "hqdefault.jpg"
+            },
+            
+            {
+                title: "Kar Har Maidaan Fateh",
+                artist: "Sukhwinder Singh",
+                src: "Kar Har Maidaan Fateh Sanju.mp3",
+                cover: "hq720.jpg",
+            },
+            {
+                title:"Chak De India",
+                artist:"Sukhwinder Singh",
+                src:"Chak De India Title Song.mp3",
+                cover:"maxresdefault (1).jpg"
+
+            },
+          
+            {
+                title: "Believer",
+                artist: "Imagine Dragons",
+                src: "Believer.mp3",
+                cover: "maxresdefault.jpg"
+            }
+        ];
+
+        const audio = new Audio();
+        let currentSongIndex = 0;
+        let isPlaying = false;
+
+        const albumArt = document.getElementById('albumArt');
+        const songTitle = document.getElementById('songTitle');
+        const artist = document.getElementById('artist');
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressBar = document.getElementById('progressBar');
+        const playlistDiv = document.getElementById('playlist');
+
+        function loadSong(index) {
+            const song = playlist[index];
+            audio.src = song.src;
+            songTitle.textContent = song.title;
+            artist.textContent = song.artist;
+            albumArt.src = song.cover;
+            updatePlaylistUI();
+        }
+
+        function updatePlaylistUI() {
+            playlistDiv.innerHTML = '';
+            playlist.forEach((song, index) => {
+                const div = document.createElement('div');
+                div.classList.add('playlist-item');
+                if (index === currentSongIndex) div.classList.add('active');
+                div.textContent = `${song.title} - ${song.artist}`;
+                div.addEventListener('click', () => {
+                    currentSongIndex = index;
+                    loadSong(currentSongIndex);
+                    playSong();
+                });
+                playlistDiv.appendChild(div);
+            });
+        }
+
+        function playSong() {
+            isPlaying = true;
+            playPauseBtn.textContent = '⏸';
+            audio.play();
+        }
+
+        function pauseSong() {
+            isPlaying = false;
+            playPauseBtn.textContent = '▶';
+            audio.pause();
+        }
+
+        playPauseBtn.addEventListener('click', () => {
+            if (isPlaying) {
+                pauseSong();
+            } else {
+                playSong();
+            }
+        });
+
+        prevBtn.addEventListener('click', () => {
+            currentSongIndex = (currentSongIndex - 1 + playlist.length) % playlist.length;
+            loadSong(currentSongIndex);
+            playSong();
+        });
+
+        nextBtn.addEventListener('click', () => {
+            currentSongIndex = (currentSongIndex + 1) % playlist.length;
+            loadSong(currentSongIndex);
+            playSong();
+        });
+
+        audio.addEventListener('timeupdate', () => {
+            const progressPercent = (audio.currentTime / audio.duration) * 100;
+            progressBar.style.width = `${progressPercent}%`;
+        });
+
+        progressContainer.addEventListener('click', (e) => {
+            const width = progressContainer.clientWidth;
+            const clickX = e.offsetX;
+            const duration = audio.duration;
+            audio.currentTime = (clickX / width) * duration;
+        });
+
+        audio.addEventListener('ended', () => {
+            nextBtn.click();
+        });
+
+        // Initial load
+        loadSong(currentSongIndex);
+        updatePlaylistUI();
+    </script>
+</body>
+</html>
